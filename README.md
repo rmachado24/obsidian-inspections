@@ -85,6 +85,17 @@ If you have multiple URLs, you can also do:
 }
 ```
 
+## Dependencies
+
+This project automatically syncs skill definitions from [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) into the `.codex/skills/` directory. These skills provide guidance for AI agents working with Obsidian-specific file formats.
+
+The sync happens automatically:
+- Daily at midnight UTC
+- On manual trigger via GitHub Actions
+- When changes are pushed to the main branch
+
+See [`.codex/README.md`](.codex/README.md) for more details.
+
 ## API Documentation
 
 See https://docs.obsidian.md
