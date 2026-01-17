@@ -1,0 +1,75 @@
+name: Sync Skills Dependencies
+
+on:
+  # Run daily at midnight UTC
+  schedule:
+    - cron: '0 0 * * *'
+  # Allow manual triggering
+  workflow_dispatch:
+  # Run on push to main branch
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-skills:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup temporary directory
+        run: |
+          mkdir -p /tmp/obsidian-skills-sync
+      
+      - name: Clone obsidian-skills repository
+        run: |
+          cd /tmp/obsidian-skills-sync
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/kepano/obsidian-skills.git
+          cd obsidian-skills
+          git sparse-checkout set skills
+      
+      - name: Sync skills to .codex directory
+        run: |
+          # Remove old skills directory if it exists
+          rm -rf .codex/skills
+          
+          # Create the directory structure
+          mkdir -p .codex/skills
+          
+          # Copy the skills directory
+          cp -r /tmp/obsidian-skills-sync/obsidian-skills/skills/* .codex/skills/
+          
+          # Display what was copied
+          echo "=== Synced files ==="
+          find .codex/skills -type f
+      
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git add .codex/
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected"
+          fi
+      
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "chore: sync skills dependencies from kepano/obsidian-skills"
+          git push
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf /tmp/obsidian-skills-sync
