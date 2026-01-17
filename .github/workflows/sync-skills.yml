@@ -19,6 +19,7 @@ jobs:
     
     steps:
       - name: Checkout repository
+        # Using @v4 for maintainability. For stricter security, consider pinning to commit hash.
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -42,23 +43,25 @@ jobs:
           # Create the directory structure
           mkdir -p .codex/skills
           
-          # Copy the skills directory
-          cp -r /tmp/obsidian-skills-sync/obsidian-skills/skills/* .codex/skills/
+          # Copy the skills directory (use shopt to handle empty dirs)
+          shopt -s nullglob
+          cp -r /tmp/obsidian-skills-sync/obsidian-skills/skills/. .codex/skills/ || true
           
           # Display what was copied
           echo "=== Synced files ==="
-          find .codex/skills -type f
+          find .codex/skills -type f || echo "No files found"
       
       - name: Check for changes
         id: check_changes
         run: |
-          git add .codex/
-          if git diff --staged --quiet; then
+          # Check for changes before adding
+          if git diff --quiet .codex/; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No changes detected"
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "Changes detected"
+            git add .codex/
           fi
       
       - name: Commit and push changes
