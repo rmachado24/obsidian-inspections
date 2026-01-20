@@ -1,36 +1,58 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
-import MyPlugin from "./main";
+export type ItemKind = "point" | "linear";
 
-export interface MyPluginSettings {
-	mySetting: string;
+export interface RatingScale {
+  min: number;
+  max: number;
 }
 
-export const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+export interface ComponentRating {
+  id: string;
+  name: string;
+  ratingScale: RatingScale;
+  weightPercent: number;
+  allowNotInspectedUsePrevious: boolean;
 }
 
-export class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const {containerEl} = this;
-
-		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Settings #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
-	}
+export interface ItemType {
+  id: string;
+  name: string;
+  kind: ItemKind;
+  components: ComponentRating[];
 }
+
+export interface NonInspectedItemType {
+  id: string;
+  name: string;
+  kind: ItemKind;
+}
+
+export interface NetworkItem {
+  id: string;
+  name: string;
+  typeId: string;
+  station?: number;
+  startStationItemId?: string;
+  endStationItemId?: string;
+}
+
+export interface NetworkCollection {
+  id: string;
+  name: string;
+  items: NetworkItem[];
+}
+
+export interface InspectionSettings {
+  inspectedItemTypes: ItemType[];
+  nonInspectedItemTypes: NonInspectedItemType[];
+  collections: NetworkCollection[];
+}
+
+export const DEFAULT_SETTINGS: InspectionSettings = {
+  inspectedItemTypes: [],
+  nonInspectedItemTypes: [],
+  collections: [],
+};
+
+export const MAX_ITEM_TYPES = 10;
+export const MIN_RATING = 0;
+export const MAX_RATING = 10;
