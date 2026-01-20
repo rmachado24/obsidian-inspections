@@ -32,9 +32,9 @@ export class InspectionSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", {
-      text: "Inspection network settings",
-    });
+    new Setting(containerEl)
+      .setName("Inspection network")
+      .setHeading();
 
     this.renderInspectedItemTypes(containerEl);
     this.renderNonInspectedItemTypes(containerEl);
@@ -43,7 +43,9 @@ export class InspectionSettingTab extends PluginSettingTab {
   }
 
   private renderInspectedItemTypes(containerEl: HTMLElement) {
-    containerEl.createEl("h3", { text: "Inspected item types" });
+    new Setting(containerEl)
+      .setName("Inspected item types")
+      .setHeading();
     containerEl.createEl("p", {
       text: "Define up to 10 inspected facility types, each with rated components.",
     });
@@ -77,9 +79,9 @@ export class InspectionSettingTab extends PluginSettingTab {
     itemType: ItemType,
     index: number
   ) {
-    containerEl.createEl("h4", {
-      text: `Inspected type ${index + 1}`,
-    });
+    new Setting(containerEl)
+      .setName(`Inspected type ${index + 1}`)
+      .setHeading();
 
     new Setting(containerEl)
       .setName("Type name")
@@ -121,7 +123,9 @@ export class InspectionSettingTab extends PluginSettingTab {
         })
       );
 
-    containerEl.createEl("h5", { text: "Rated components" });
+    new Setting(containerEl)
+      .setName("Rated components")
+      .setHeading();
 
     new Setting(containerEl)
       .setName("Add component")
@@ -208,7 +212,7 @@ export class InspectionSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Allow NI/UP (not inspected/use previous)")
+      .setName("Allow not inspected/use previous")
       .setDesc("Enable when the component can be marked not inspected and reuse the previous rating.")
       .addToggle((toggle) => {
         toggle.setValue(component.allowNotInspectedUsePrevious).onChange(async (value) => {
@@ -219,7 +223,9 @@ export class InspectionSettingTab extends PluginSettingTab {
   }
 
   private renderNonInspectedItemTypes(containerEl: HTMLElement) {
-    containerEl.createEl("h3", { text: "Non-inspected item types" });
+    new Setting(containerEl)
+      .setName("Non-inspected item types")
+      .setHeading();
     containerEl.createEl("p", {
       text: "Define navigation or reference items that are not directly inspected.",
     });
@@ -249,16 +255,16 @@ export class InspectionSettingTab extends PluginSettingTab {
     itemType: NonInspectedItemType,
     index: number
   ) {
-    containerEl.createEl("h4", {
-      text: `Non-inspected type ${index + 1}`,
-    });
+    new Setting(containerEl)
+      .setName(`Non-inspected type ${index + 1}`)
+      .setHeading();
 
     new Setting(containerEl)
       .setName("Type name")
       .setDesc("Use a unique name within non-inspected types.")
       .addText((text) =>
         text
-          .setPlaceholder("STA marker")
+          .setPlaceholder("Station marker")
           .setValue(itemType.name)
           .onChange(async (value) => {
             itemType.name = value;
@@ -295,7 +301,9 @@ export class InspectionSettingTab extends PluginSettingTab {
   }
 
   private renderCollections(containerEl: HTMLElement) {
-    containerEl.createEl("h3", { text: "Collections" });
+    new Setting(containerEl)
+      .setName("Collections")
+      .setHeading();
     containerEl.createEl("p", {
       text: "Define each connected linear network (for example, a single canal).",
     });
@@ -325,14 +333,16 @@ export class InspectionSettingTab extends PluginSettingTab {
     collection: NetworkCollection,
     index: number
   ) {
-    containerEl.createEl("h4", { text: `Collection ${index + 1}` });
+    new Setting(containerEl)
+      .setName(`Collection ${index + 1}`)
+      .setHeading();
 
     new Setting(containerEl)
       .setName("Collection name")
       .setDesc("Names are used to group items into connected networks.")
       .addText((text) =>
         text
-          .setPlaceholder("Canal A")
+          .setPlaceholder("Example canal")
           .setValue(collection.name)
           .onChange(async (value) => {
             collection.name = value;
@@ -391,7 +401,9 @@ export class InspectionSettingTab extends PluginSettingTab {
     item: NetworkItem,
     index: number
   ) {
-    containerEl.createEl("h5", { text: `Item ${index + 1}` });
+    new Setting(containerEl)
+      .setName(`Item ${index + 1}`)
+      .setHeading();
 
     new Setting(containerEl)
       .setName("Item name")
@@ -474,12 +486,13 @@ export class InspectionSettingTab extends PluginSettingTab {
             dropdown.setDisabled(true);
             return;
           }
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
           options.forEach((option) => dropdown.addOption(option.id, option.label));
           dropdown
-            .setValue(item.startStationItemId || options[0].id)
-            .onChange(async (value) => {
+            .setValue(item.startStationItemId || (options[0]?.id ?? ""))
+            .onChange((value) => {
               item.startStationItemId = value;
-              await this.plugin.saveSettings();
+              void this.plugin.saveSettings();
             });
         });
 
@@ -493,12 +506,13 @@ export class InspectionSettingTab extends PluginSettingTab {
             dropdown.setDisabled(true);
             return;
           }
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
           options.forEach((option) => dropdown.addOption(option.id, option.label));
           dropdown
-            .setValue(item.endStationItemId || options[0].id)
-            .onChange(async (value) => {
+            .setValue(item.endStationItemId || (options[0]?.id ?? ""))
+            .onChange((value) => {
               item.endStationItemId = value;
-              await this.plugin.saveSettings();
+              void this.plugin.saveSettings();
             });
         });
     }
@@ -517,7 +531,9 @@ export class InspectionSettingTab extends PluginSettingTab {
 
   private renderValidation(containerEl: HTMLElement) {
     const errors = validateSettings(this.plugin.settings);
-    containerEl.createEl("h3", { text: "Validation" });
+    new Setting(containerEl)
+      .setName("Validation")
+      .setHeading();
 
     if (errors.length === 0) {
       containerEl.createEl("p", { text: "All settings are valid." });
