@@ -490,9 +490,9 @@ export class InspectionSettingTab extends PluginSettingTab {
           options.forEach((option) => dropdown.addOption(option.id, option.label));
           dropdown
             .setValue(item.startStationItemId || (options[0]?.id ?? ""))
-            .onChange((value) => {
+            .onChange(async (value) => {
               item.startStationItemId = value;
-              void this.plugin.saveSettings();
+              await this.plugin.saveSettings();
             });
         });
 
@@ -510,9 +510,9 @@ export class InspectionSettingTab extends PluginSettingTab {
           options.forEach((option) => dropdown.addOption(option.id, option.label));
           dropdown
             .setValue(item.endStationItemId || (options[0]?.id ?? ""))
-            .onChange((value) => {
+            .onChange(async (value) => {
               item.endStationItemId = value;
-              void this.plugin.saveSettings();
+              await this.plugin.saveSettings();
             });
         });
     }
