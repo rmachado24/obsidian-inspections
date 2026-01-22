@@ -22,6 +22,22 @@ jobs:
           npm ci
           npm run build
 
+      - name: Verify release artifacts
+        run: |
+          if [ ! -f main.js ]; then
+            echo "Error: main.js not found after build"
+            exit 1
+          fi
+          if [ ! -f manifest.json ]; then
+            echo "Error: manifest.json not found"
+            exit 1
+          fi
+          if [ ! -f styles.css ]; then
+            echo "Error: styles.css not found"
+            exit 1
+          fi
+          echo "All required release artifacts present"
+
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
