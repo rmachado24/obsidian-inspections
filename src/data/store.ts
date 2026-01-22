@@ -30,7 +30,7 @@ export class InspectionStore {
   }
 
   async load(): Promise<void> {
-    const raw = await this.plugin.loadData();
+    const raw: unknown = await this.plugin.loadData();
 
     if (isStoredDataV1(raw)) {
       this.database = raw.database;

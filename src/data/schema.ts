@@ -84,7 +84,7 @@ export function settingsToDatabase(settings: InspectionSettings): InspectionData
     database.componentIdsByItemType[itemType.id] = [];
 
     itemType.components.forEach((component) => {
-      database.componentIdsByItemType[itemType.id].push(component.id);
+      database.componentIdsByItemType[itemType.id]!.push(component.id);
       database.components[component.id] = {
         id: component.id,
         itemTypeId: itemType.id,
@@ -118,7 +118,7 @@ export function settingsToDatabase(settings: InspectionSettings): InspectionData
     };
 
     collection.items.forEach((item) => {
-      database.collections[collection.id].itemIds.push(item.id);
+      database.collections[collection.id]!.itemIds.push(item.id);
       database.items[item.id] = {
         id: item.id,
         name: item.name,
