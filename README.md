@@ -28,14 +28,34 @@ Quick starting guide for new plugin devs:
 
 ## Releasing new releases
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+This repository includes an automated GitHub Actions workflow that simplifies the release process.
+
+### Automated Release (Recommended)
+
+1. Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
+2. Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
+3. Commit and push your changes to the repository.
+4. Create and push a git tag with your version number:
+   ```bash
+   git tag -a 0.2.2 -m "Release 0.2.2"
+   git push origin 0.2.2
+   ```
+5. The GitHub Actions workflow will automatically:
+   - Build the plugin
+   - Verify that all required files exist
+   - Create a draft GitHub release
+   - Attach `main.js`, `manifest.json`, and `styles.css` as release assets
+6. Review the draft release on GitHub and publish it when ready.
 
 > You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
 > The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+
+### Manual Release (Alternative)
+
+If you prefer to create releases manually:
+- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
+- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
+- Publish the release.
 
 ## Adding your plugin to the community plugin list
 
