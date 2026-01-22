@@ -47,7 +47,7 @@ export class InspectionSettingTab extends PluginSettingTab {
   }
 
   private renderSetupOverview(containerEl: HTMLElement) {
-    containerEl.createEl("h3", { text: "Setup checklist" });
+    new Setting(containerEl).setName("Setup checklist").setHeading();
     const list = containerEl.createEl("ol");
     list.createEl("li", {
       text: "Create inspected item types and their rated components.",
