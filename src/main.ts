@@ -1,9 +1,11 @@
 import { Plugin } from "obsidian";
-import { DEFAULT_SETTINGS, InspectionSettings } from "./settings";
+import { InspectionStore } from "./data/store";
+import { InspectionSettings } from "./settings";
 import { InspectionSettingTab } from "./ui/settings-tab";
 
 export default class InspectionPlugin extends Plugin {
   settings: InspectionSettings;
+  store: InspectionStore;
 
   async onload() {
     await this.loadSettings();
@@ -11,14 +13,12 @@ export default class InspectionPlugin extends Plugin {
   }
 
   async loadSettings() {
-    const stored = (await this.loadData()) as Partial<InspectionSettings> | null;
-    this.settings = {
-      ...DEFAULT_SETTINGS,
-      ...stored,
-    };
+    this.store = new InspectionStore(this);
+    await this.store.load();
+    this.settings = this.store.settings;
   }
 
   async saveSettings() {
-    await this.saveData(this.settings);
+    await this.store.saveFromSettings(this.settings);
   }
 }
