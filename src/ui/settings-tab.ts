@@ -35,6 +35,10 @@ export class InspectionSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Inspection network")
       .setHeading();
+    containerEl.createEl("p", {
+      text: "Define the inspection structure here. Start by naming item types, then assemble collections that map your network.",
+    });
+    this.renderSetupOverview(containerEl);
 
     this.renderInspectedItemTypes(containerEl);
     this.renderNonInspectedItemTypes(containerEl);
@@ -42,12 +46,32 @@ export class InspectionSettingTab extends PluginSettingTab {
     this.renderValidation(containerEl);
   }
 
+  private renderSetupOverview(containerEl: HTMLElement) {
+    containerEl.createEl("h3", { text: "Setup checklist" });
+    const list = containerEl.createEl("ol");
+    list.createEl("li", {
+      text: "Create inspected item types and their rated components.",
+    });
+    list.createEl("li", {
+      text: "Add non-inspected types for markers or reference items (optional).",
+    });
+    list.createEl("li", {
+      text: "Build collections by adding point items (stations) and linear items (segments).",
+    });
+    list.createEl("li", {
+      text: "Review validation feedback at the bottom before running inspections.",
+    });
+  }
+
   private renderInspectedItemTypes(containerEl: HTMLElement) {
     new Setting(containerEl)
       .setName("Inspected item types")
       .setHeading();
     containerEl.createEl("p", {
-      text: "Define up to 10 inspected facility types, each with rated components.",
+      text: `Define up to ${MAX_ITEM_TYPES} inspected facility types, each with rated components.`,
+    });
+    containerEl.createEl("p", {
+      text: `Currently using ${this.plugin.settings.inspectedItemTypes.length} of ${MAX_ITEM_TYPES}.`,
     });
 
     new Setting(containerEl)
@@ -83,6 +107,17 @@ export class InspectionSettingTab extends PluginSettingTab {
       .setName(`Inspected type ${index + 1}`)
       .setHeading();
 
+    const summaryEl = containerEl.createEl("p");
+    const updateSummary = () => {
+      const componentCount = itemType.components.length;
+      const weightTotal = itemType.components.reduce(
+        (total, component) => total + component.weightPercent,
+        0
+      );
+      summaryEl.setText(`Components: ${componentCount}. Total weight: ${weightTotal}%.`);
+    };
+    updateSummary();
+
     new Setting(containerEl)
       .setName("Type name")
       .setDesc("Use a unique name within inspected types.")
@@ -113,7 +148,7 @@ export class InspectionSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Remove inspected type")
-      .setDesc("Delete this inspected item type.")
+      .setDesc("Delete this inspected item type and its components.")
       .addButton((button) =>
         button.setButtonText("Remove").setWarning().onClick(async () => {
           this.plugin.settings.inspectedItemTypes =
@@ -126,6 +161,9 @@ export class InspectionSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Rated components")
       .setHeading();
+    containerEl.createEl("p", {
+      text: "Each component should have a name, rating scale, and weight that contributes to the total score.",
+    });
 
     new Setting(containerEl)
       .setName("Add component")
@@ -145,14 +183,15 @@ export class InspectionSettingTab extends PluginSettingTab {
       });
 
     itemType.components.forEach((component) => {
-      this.renderComponent(containerEl, itemType, component);
+      this.renderComponent(containerEl, itemType, component, updateSummary);
     });
   }
 
   private renderComponent(
     containerEl: HTMLElement,
     itemType: ItemType,
-    component: ComponentRating
+    component: ComponentRating,
+    updateSummary: () => void
   ) {
     new Setting(containerEl)
       .setName("Component name")
@@ -170,6 +209,7 @@ export class InspectionSettingTab extends PluginSettingTab {
 
     scaleSetting.addText((text) => {
       text.setValue(component.ratingScale.min.toString());
+      text.setPlaceholder("Min");
       text.inputEl.type = "number";
       text.inputEl.min = MIN_RATING.toString();
       text.inputEl.max = MAX_RATING.toString();
@@ -181,6 +221,7 @@ export class InspectionSettingTab extends PluginSettingTab {
 
     scaleSetting.addText((text) => {
       text.setValue(component.ratingScale.max.toString());
+      text.setPlaceholder("Max");
       text.inputEl.type = "number";
       text.inputEl.min = MIN_RATING.toString();
       text.inputEl.max = MAX_RATING.toString();
@@ -192,7 +233,7 @@ export class InspectionSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Weight percent")
-      .setDesc("Set a universal weight for this component.")
+      .setDesc("Set a weight between 0 and 100. Aim for totals to equal 100%.")
       .addText((text) => {
         text.setValue(component.weightPercent.toString());
         text.inputEl.type = "number";
@@ -201,6 +242,7 @@ export class InspectionSettingTab extends PluginSettingTab {
         text.onChange(async (value) => {
           component.weightPercent = Number(value);
           await this.plugin.saveSettings();
+          updateSummary();
         });
       })
       .addButton((button) =>
@@ -306,6 +348,9 @@ export class InspectionSettingTab extends PluginSettingTab {
       .setHeading();
     containerEl.createEl("p", {
       text: "Define each connected linear network (for example, a single canal).",
+    });
+    containerEl.createEl("p", {
+      text: "Tip: add point items first so linear items can reference start and end stations.",
     });
 
     new Setting(containerEl)
@@ -456,6 +501,7 @@ export class InspectionSettingTab extends PluginSettingTab {
         .setDesc("Station value for this point item.")
         .addText((text) => {
           text.setValue(item.station?.toString() ?? "");
+          text.setPlaceholder("0.0");
           text.inputEl.type = "number";
           text.onChange(async (value) => {
             item.station = value === "" ? undefined : Number(value);
@@ -468,6 +514,10 @@ export class InspectionSettingTab extends PluginSettingTab {
       const pointItems = collection.items.filter(
         (entry) => this.getItemKind(entry.typeId) === "point"
       );
+
+      containerEl.createEl("p", {
+        text: `Available point items: ${pointItems.length}.`,
+      });
 
       const options = pointItems.map((entry) => ({
         id: entry.id,
@@ -534,6 +584,9 @@ export class InspectionSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Validation")
       .setHeading();
+    containerEl.createEl("p", {
+      text: "Resolve any issues below to keep inspections consistent and connected.",
+    });
 
     if (errors.length === 0) {
       containerEl.createEl("p", { text: "All settings are valid." });
