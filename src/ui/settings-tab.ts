@@ -110,10 +110,12 @@ export class InspectionSettingTab extends PluginSettingTab {
     const summaryEl = containerEl.createEl("p");
     const updateSummary = () => {
       const componentCount = itemType.components.length;
-      const weightTotal = itemType.components.reduce(
-        (total, component) => total + component.weightPercent,
-        0
-      );
+      const weightTotal = itemType.components.reduce((total, component) => {
+        const weight = Number.isFinite(component.weightPercent)
+          ? component.weightPercent
+          : 0;
+        return total + weight;
+      }, 0);
       summaryEl.setText(`Components: ${componentCount}. Total weight: ${weightTotal}%.`);
     };
     updateSummary();
